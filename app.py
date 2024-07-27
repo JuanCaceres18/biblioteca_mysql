@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from conexionDB import *
+from werkzeug.exceptions import BadRequest
 
 app = Flask(__name__)
 
@@ -28,6 +29,11 @@ def agregar_libros():
     con = connectionDB()
     # Convierto datos de la solicitud en diccionario Python
     data = request.json
+
+    # Enviar un error 400 si el score es incorrecto.
+    if not (1 <= int(data["score"])) <= 10:
+        raise BadRequest("El score es inválido")
+    
     sql = """
         INSERT INTO libros (titulo, autor, release_date, genero, score) 
         VALUES (%s, %s, %s, %s, %s)
@@ -37,10 +43,10 @@ def agregar_libros():
 
     cur = con.cursor()
     cur.execute(sql,values)
-
     con.commit()
     cur.close()
     con.close()
+
     return jsonify({"message":"Libro agregado!"}, 201)
 
 @app.route("/api/libros/<int:id_libro>", methods=["GET","PUT"])

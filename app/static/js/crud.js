@@ -1,13 +1,17 @@
-
+// Función que te permite agregar libros
 async function agregarLibro(){
     // Obtener elementos html
-    const libros = {
-        titulo: document.querySelector(".titulo").value,
-        autor: document.querySelector(".autor").value,
-        fecha: document.querySelector(".fecha").value,
-        genero:document.querySelector(".genero").value,
-        score:document.querySelector(".calificacion").value
-    }    
+    const libros = obtenerValoresInputs()
+
+    if (validarScore(libros.score)){
+        mostrarMensaje("error","Error!","El score no puede ser mayor a 10");
+        return;
+    }
+
+    if (!libros.titulo || !libros.autor || !libros.genero || !libros.fecha || !libros.score){
+        mostrarMensaje("error", "Error!", "Los campos deben rellenarse");
+        return;
+    }
 
     console.log(`Titulo: ${libros.titulo}`);
     console.log(`Autor: ${libros.autor}`);
@@ -22,34 +26,44 @@ async function agregarLibro(){
         },
         body: JSON.stringify(libros)
     })
+
     .then(response => {
         if (!response.ok){
+
+            // Si alguno de los campos está vacío, le tiro un mensaje de error
+            mostrarMensaje("error", "Error", "Debe rellenar todos los campos");
+
             throw new Error("The network doesn't work");
         }
         return response.json()
     })
     .then(data => {
         console.log(data)
-        Swal.fire({
-            icon: "success",
-            title: "Genial!",
-            text: "Libro guardado",
-          });
+
+        mostrarMensaje("success", "Genial!", "Libro guardado");
+
+        LimpiarCampos();
+
         mostrarLibros();
     })
+
     .catch(error => {
         console.error("Hubo un error: ", error)
     })
 }
 
+// Función para mostrar libros
 async function mostrarLibros(){
     fetch("/api/libros")
     .then(response => {
+
         if (!response.ok){
             throw new Error("The network doesn't work")
         }
+
         return response.json()
     })
+
     .then(data => {
         // Mostrar respuesta del servidor
         console.log(data);
@@ -58,7 +72,7 @@ async function mostrarLibros(){
         const table = document.getElementById("table_books");
 
         // Limpiar tabla
-        table.innerHTML= ""
+        table.innerHTML = ""
         data.forEach((libro) => {
             item = `<tr class="fila">
                         <td>${libro[0]}</td>
@@ -83,6 +97,7 @@ async function mostrarLibros(){
     }) 
 } 
 
+// Función para cargar datos del libro seleccionado en los inputs
 async function cargarLibro(id_libro){
     try{
         // Hago solicitud al servidor
@@ -104,7 +119,7 @@ async function cargarLibro(id_libro){
         const fecha = document.querySelector(".fecha");
         const genero = document.querySelector(".genero");
         const score = document.querySelector(".calificacion");
-        
+
         // Colocar datos de fila elegida en los inputs
         titulo.value = result.titulo;
         autor.value = result.autor;
@@ -149,11 +164,7 @@ async function editarLibro(id_libro){
 
         async function manejarClick(){
             // Obtengo el valor de los inputs
-            const titulo = document.querySelector(".titulo").value;
-            const autor = document.querySelector(".autor").value;
-            const fecha = document.querySelector(".fecha").value;
-            const genero = document.querySelector(".genero").value;
-            const score = document.querySelector(".calificacion").value;
+            const libros = obtenerValoresInputs()
 
             // Hago la solicitud PUT
             try{
@@ -162,13 +173,7 @@ async function editarLibro(id_libro){
                     headers:{
                         "Content-Type":"application/json"
                     },
-                    body: JSON.stringify({
-                        titulo: titulo,
-                        autor: autor,
-                        fecha: fecha,
-                        genero: genero,
-                        score: score
-                    })
+                    body: JSON.stringify(libros)
                 })
 
                 if (!response.ok){
@@ -197,24 +202,19 @@ async function editarLibro(id_libro){
     }
 }
 
+// Función que limpia los inputs
 function LimpiarCampos(){
-    // Obtengo los inputs por medio del DOM
-    const titulo = document.querySelector(".titulo");
-    const autor = document.querySelector(".autor");
-    const fecha = document.querySelector(".fecha");
-    const genero = document.querySelector(".genero");
-    const score = document.querySelector(".calificacion");
-
     // Establezco sus valores en vacío
-    titulo.value = "";
-    autor.value = "";
-    fecha.value = "";
-    genero.value = "";
-    score.value = "";
+    document.querySelector(".titulo").value = "";
+    document.querySelector(".autor").value = "";
+    document.querySelector(".fecha").value = "";
+    document.querySelector(".genero").value = "";
+    document.querySelector(".calificacion").value = "";
 }
 
 // Eliminar registro
 async function eliminarLibro(id_libro){
+
     Swal.fire({
         title: "¿Estás seguro de que quieres eliminarlo?",
         text: "No serás capaz de revertir esta acción",
@@ -223,7 +223,8 @@ async function eliminarLibro(id_libro){
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
         confirmButtonText: "Sí, eliminar"
-      }).then(async (result) => {
+      })
+      .then(async (result) => {
         if (result.isConfirmed) {
             // Obtengo el contenido de los libros
             const data = await fetch(`/api/libros/${id_libro}`);
@@ -241,39 +242,43 @@ async function eliminarLibro(id_libro){
                         console.log(response);
                         throw new Error("Hubo un error en el DELETE");
                     }
-            
-                    Swal.fire({
-                        title: "Eliminado!",
-                        text: "El libro ha sido eliminado",
-                        icon: "success"
-                    });
+                    
+                    mostrarMensaje("success", "Eliminado!", "El libro ha sido eliminado")
+
+                    LimpiarCampos();
+
                     // Actualizo la tabla de libros
                     mostrarLibros();
                 }
                 catch{
-                    Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        text: "Algo salió mal",
-                    });
+                    mostrarMensaje("error","Oops...","Algo salió mal");
                 }
             }
         }
     });
 }
 
-function validarCampos(){
-    const titulo = document.querySelector(".titulo");
-    const autor = document.querySelector(".autor");
-    const fecha = document.querySelector(".fecha");
-    const genero = document.querySelector(".genero");
-    const score = document.querySelector(".calificacion");
+// Función para validar puntuación
+function validarScore(score){
+    return score < 1 || score > 10
+}
 
-    if (!titulo.value || !autor.value || !genero.value || !fecha.value || !score.value){
-        Swal.fire({
-            icon: "error",
-            title: "Oops...",
-            text: "Debes rellenar todos los campos",
-          });
+// Obtener valores de los inputs
+function obtenerValoresInputs(){
+    return {
+        titulo: document.querySelector(".titulo").value,
+        autor: document.querySelector(".autor").value,
+        fecha: document.querySelector(".fecha").value,
+        genero: document.querySelector(".genero").value,
+        score: document.querySelector(".calificacion").value
     }
+}
+
+// Generar mensaje Swal.fire
+function mostrarMensaje(icon, title, text){
+    Swal.fire({
+        icon: icon,
+        title: title,
+        text: text
+    })
 }

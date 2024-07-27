@@ -1,0 +1,23 @@
+[33mcommit 799bc259015d8e09578f290587f0c90c240b2004[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: Juan Pablo <juanpablocaceres8@gmail.com>
+Date:   Thu Jul 25 07:35:10 2024 -0300
+
+    Terminando función delete
+
+[33mcommit 68c418ad87e0a0c90ab25bc6e94694bd024edd6e[m
+Author: Juan Pablo <juanpablocaceres8@gmail.com>
+Date:   Wed Jul 24 23:05:59 2024 -0300
+
+    Función para editar librs
+
+[33mcommit 0699d719e8dd9b30cf2b382cdf1a244d81413978[m
+Author: Juan Pablo <juanpablocaceres8@gmail.com>
+Date:   Sat Jul 20 21:07:30 2024 -0300
+
+    aplico gitignore
+
+[33mcommit 1e6ad8932c26b7852a3b45d97ba5420c7246aa25[m
+Author: Juan Pablo <juanpablocaceres8@gmail.com>
+Date:   Sat Jul 20 21:02:58 2024 -0300
+
+    Integración con frontend
